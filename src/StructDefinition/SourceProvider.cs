@@ -112,55 +112,55 @@ namespace {Namespace}
 
         public int Size => BaseTypeSize;
 
-        public int CompareTo(object? obj) => _baseValue.CompareTo(obj);
+        public int CompareTo(object? obj) => Value.CompareTo(obj);
 
-        public int CompareTo({0} other) => _baseValue.CompareTo(other);
+        public int CompareTo({0} other) => Value.CompareTo(other);
 
-        public bool Equals({0} other) => _baseValue.Equals(other);
+        public bool Equals({0} other) => Value.Equals(other);
 
-        public TypeCode GetTypeCode() => _baseValue.GetTypeCode();
+        public TypeCode GetTypeCode() => Value.GetTypeCode();
 
-        bool IConvertible.ToBoolean(IFormatProvider? provider) => Convert.ToBoolean(_baseValue, provider);
+        bool IConvertible.ToBoolean(IFormatProvider? provider) => Convert.ToBoolean(Value, provider);
 
-        byte IConvertible.ToByte(IFormatProvider? provider) => Convert.ToByte(_baseValue, provider);
+        byte IConvertible.ToByte(IFormatProvider? provider) => Convert.ToByte(Value, provider);
 
-        char IConvertible.ToChar(IFormatProvider? provider) => Convert.ToChar(_baseValue, provider);
+        char IConvertible.ToChar(IFormatProvider? provider) => Convert.ToChar(Value, provider);
 
         DateTime IConvertible.ToDateTime(IFormatProvider? provider) => throw new InvalidCastException(""Unable to cast to DateTime"");
 
-        decimal IConvertible.ToDecimal(IFormatProvider? provider) => Convert.ToDecimal(_baseValue, provider);
+        decimal IConvertible.ToDecimal(IFormatProvider? provider) => Convert.ToDecimal(Value, provider);
 
-        double IConvertible.ToDouble(IFormatProvider? provider) => Convert.ToDouble(_baseValue, provider);
+        double IConvertible.ToDouble(IFormatProvider? provider) => Convert.ToDouble(Value, provider);
 
-        short IConvertible.ToInt16(IFormatProvider? provider) => Convert.ToInt16(_baseValue, provider);
+        short IConvertible.ToInt16(IFormatProvider? provider) => Convert.ToInt16(Value, provider);
 
-        int IConvertible.ToInt32(IFormatProvider? provider) => Convert.ToInt32(_baseValue, provider);
+        int IConvertible.ToInt32(IFormatProvider? provider) => Convert.ToInt32(Value, provider);
 
-        long IConvertible.ToInt64(IFormatProvider? provider) => Convert.ToInt64(_baseValue, provider);
+        long IConvertible.ToInt64(IFormatProvider? provider) => Convert.ToInt64(Value, provider);
 
-        sbyte IConvertible.ToSByte(IFormatProvider? provider) => Convert.ToSByte(_baseValue, provider);
+        sbyte IConvertible.ToSByte(IFormatProvider? provider) => Convert.ToSByte(Value, provider);
 
-        float IConvertible.ToSingle(IFormatProvider? provider) => Convert.ToSingle(_baseValue, provider);
+        float IConvertible.ToSingle(IFormatProvider? provider) => Convert.ToSingle(Value, provider);
 
         object IConvertible.ToType(Type conversionType, IFormatProvider? provider) => Convert.ChangeType(this, conversionType, provider);
 
-        ushort IConvertible.ToUInt16(IFormatProvider? provider) => Convert.ToUInt16(_baseValue, provider);
+        ushort IConvertible.ToUInt16(IFormatProvider? provider) => Convert.ToUInt16(Value, provider);
 
-        uint IConvertible.ToUInt32(IFormatProvider? provider) => Convert.ToUInt32(_baseValue, provider);
+        uint IConvertible.ToUInt32(IFormatProvider? provider) => Convert.ToUInt32(Value, provider);
 
-        ulong IConvertible.ToUInt64(IFormatProvider? provider) => Convert.ToUInt64(_baseValue, provider);        
+        ulong IConvertible.ToUInt64(IFormatProvider? provider) => Convert.ToUInt64(Value, provider);        
 
-        public string ToString(IFormatProvider? provider) => _baseValue.ToString(provider);
+        public string ToString(IFormatProvider? provider) => Value.ToString(provider);
 
-        public string ToString(string? format) => _baseValue.ToString(format);
+        public string ToString(string? format) => Value.ToString(format);
 
-        public string ToString(string? format, IFormatProvider? provider) => _baseValue.ToString(format, provider);        
+        public string ToString(string? format, IFormatProvider? provider) => Value.ToString(format, provider);        
 
         public static implicit operator {1}({0} value) => new {1}(value);
 
-        public static implicit operator {0}({1} value)  => value._baseValue;
+        public static implicit operator {0}({1} value)  => value.Value;
 
-        public override int GetHashCode() => _baseValue.GetHashCode();
+        public override int GetHashCode() => Value.GetHashCode();
 
         public override bool Equals(object? obj) => obj is {0} other && Equals(other);
 
@@ -183,11 +183,11 @@ namespace {Namespace}
         private static StringBuilder AppendConstructor(this StringBuilder builder, string name, string baseType, string modifier = "private") =>
             builder.AppendFormat(CultureInfo.InvariantCulture,
                 @"
-        private {1} _baseValue;
+        private {1} Value;
 
         private {2}({1} value)
         {{
-            _baseValue = value;
+            Value = value;
         }}
 ",
                 modifier,
@@ -203,7 +203,7 @@ namespace {Namespace}
                 ? builder.Append("public override string ToString() => ToString(System.Globalization.CultureInfo.InvariantCulture);")
                 : builder.AppendFormat(
                     CultureInfo.InvariantCulture,
-                    "public override string ToString() => string.Format(System.Globalization.CultureInfo.InvariantCulture, \"0x{{0:X{0}}}\", _baseValue);",
+                    "public override string ToString() => string.Format(System.Globalization.CultureInfo.InvariantCulture, \"0x{{0:X{0}}}\", Value);",
                     hexPadding);
         }
 
@@ -235,9 +235,9 @@ namespace {0}
             if (string.Equals(baseType, "byte", StringComparison.OrdinalIgnoreCase))
             {
                 builder.AppendLine();
-                builder.AppendLine("public byte[] ToByteArray() => new [] { _baseValue };");
+                builder.AppendLine("public byte[] ToByteArray() => new [] { Value };");
                 builder.AppendLine();
-                builder.Append("public void Write(Span<byte> buffer) => buffer[0] = _baseValue;");
+                builder.Append("public void Write(Span<byte> buffer) => buffer[0] = Value;");
             }
             else
             {
@@ -254,7 +254,7 @@ namespace {0}
                 builder.AppendFormat(CultureInfo.InvariantCulture,
                     @"
 
-        public void Write(Span<byte> buffer) => BinaryPrimitives.Write{0}{1}(buffer, _baseValue);",
+        public void Write(Span<byte> buffer) => BinaryPrimitives.Write{0}{1}(buffer, Value);",
                     ConvertBaseTypeToSystemName(baseType),
                     GetEndianString(isLittleEndian));
             }
