@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Linq;
 using StructDefinition.Tests.Extensions;
 using StructDefinition.Tests.Infrastructure;
@@ -59,6 +60,50 @@ namespace Test
 ";
 
             const string expected = "private readonly long Value;";
+
+            // Act
+            var (compilation, diagnostics) = CSharpGenerator.GetOutputCompilation(source, analyzerConfigOptions: DefaultAnalyzerOptions);
+
+            // Assert
+            diagnostics.ShouldBeSuccessful();
+            compilation.GetGeneratedStructSyntaxTree("TestStruct").ShouldContainPartialSource(expected);
+        }
+
+        [Fact]
+        public void VerifyParseMethods()
+        {
+            // Arrange
+            const string? source = @"
+namespace Test
+{
+    [StructDefinition.StructDefinition(typeof(long))]
+    public readonly partial struct TestStruct { }
+}
+";
+
+            var expected =  string.Format(CultureInfo.InvariantCulture, @"
+         public static bool TryParse([NotNullWhen(true)] string? s, out TestStruct result) => TryParse(s.AsSpan(), out result);
+ 
+         public static bool TryParse(ReadOnlySpan<char> s, out TestStruct result)
+         {{
+             result = default;
+             if (!long.TryParse(s, out var r)) return false;
+             result = r;
+             return true;
+         }}
+
+         public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out TestStruct result) => TryParse(s.AsSpan(), style, provider, out result);
+
+         public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out TestStruct result)
+         {{
+             result = default;
+             if (!long.TryParse(s, style, provider, out var r)) return false;
+             result = r;
+             return true;
+         }}
+".Trim(),
+                "TestStruct",
+                "long");
 
             // Act
             var (compilation, diagnostics) = CSharpGenerator.GetOutputCompilation(source, analyzerConfigOptions: DefaultAnalyzerOptions);

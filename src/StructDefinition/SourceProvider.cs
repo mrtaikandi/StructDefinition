@@ -97,13 +97,27 @@ namespace {Namespace}
 
         public static {0} Parse(string s, IFormatProvider? provider) => {1}.Parse(s, provider);    
 
-        public static bool TryParse([NotNullWhen(true)] string? s, out {0} result) => {1}.TryParse(s, out result);
+        public static bool TryParse([NotNullWhen(true)] string? s, out {0} result) => TryParse(s.AsSpan(), out result);
+ 
+         public static bool TryParse(ReadOnlySpan<char> s, out {0} result)
+         {{
+             result = default;
+             if (!{1}.TryParse(s, out var r)) return false;
 
-        public static bool TryParse(ReadOnlySpan<char> s, out {0} result) => {1}.TryParse(s, out result);
+             result = r;
+             return true;
+         }}
 
-        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out {0} result) => {1}.TryParse(s, style, provider, out result);
+         public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out {0} result) => TryParse(s.AsSpan(), style, provider, out result);
 
-        public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out {0} result) => {1}.TryParse(s, style, provider, out result);
+         public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out {0} result)
+         {{
+             result = default;
+             if (!{1}.TryParse(s, style, provider, out var r)) return false;
+
+             result = r;
+             return true;
+         }}
 ",
                 name,
                 baseType);
