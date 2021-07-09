@@ -240,6 +240,7 @@ namespace {0}
 {{
     using System;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Buffers.Binary;
     using System.Runtime.InteropServices;
 
