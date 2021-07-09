@@ -73,6 +73,7 @@ namespace {Namespace}
                 .AppendCommonInterfaceImplementations(option.Name, option.BaseType)
                 .AppendBufferImplicitOperator(option.Name, option.BaseType, option.IsLittleEndian, true)
                 .AppendBufferImplicitOperator(option.Name, option.BaseType, option.IsLittleEndian, false)
+                .AppendParseMethods(option.BaseType)
                 .AppendToByteArrayMethod(option.BaseType, option.IsLittleEndian);
 
             if (option.OverrideToString)
@@ -83,6 +84,28 @@ namespace {Namespace}
             builder.Finalize();
 
             return ($"{option.Name}.g.cs", SourceText.From(builder.ToString(), Encoding.UTF8));
+        }
+
+        private static StringBuilder AppendParseMethods(this StringBuilder builder, string baseType)
+        {
+            return builder.AppendFormat(CultureInfo.InvariantCulture, @"
+        public static {0} Parse(string s) => {0}.Parse(s);
+
+        public static {0} Parse(string s, NumberStyles style) => {0}.Parse(s, style);
+
+        public static {0} Parse(string s, NumberStyles style, IFormatProvider? provider) => {0}.Parse(s, style, provider);   
+
+        public static {0} Parse(string s, IFormatProvider? provider) => {0}.Parse(s, provider);    
+
+        public static bool TryParse([NotNullWhen(true)] string? s, out {0} result) => {0}.TryParse(s, out result);
+
+        public static bool TryParse(ReadOnlySpan<char> s, out {0} result) => {0}.TryParse(s, out result);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out {0} result) => {0}.TryParse(s, style, provider, out result);
+
+        public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out {0} result) => {0}.TryParse(s, style, provider, out result);
+",
+                baseType);
         }
 
         private static StringBuilder AppendBufferImplicitOperator(this StringBuilder builder, string name, string baseType, bool isLittleEndian, bool isReadOnlySpan)
