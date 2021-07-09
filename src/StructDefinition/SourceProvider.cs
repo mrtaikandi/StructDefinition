@@ -243,6 +243,7 @@ namespace {0}
     using System.Globalization;
     using System.Buffers.Binary;
     using System.Runtime.InteropServices;
+    using System.Diagnostics.CodeAnalysis;
 
     [StructLayout(LayoutKind.Sequential)]    
     [DebuggerDisplay(""{1}: {{ToString()}}"")]
