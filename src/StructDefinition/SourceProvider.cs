@@ -69,7 +69,7 @@ namespace {Namespace}
         {
             var builder = new StringBuilder()
                 .AppendStruct(option.Name, option.BaseType, option.Namespace)
-                .AppendConstructor(option.Name, option.BaseType)
+                .AppendConstructor(option.Name, option.BaseType, option.IsReadonlyStruct)
                 .AppendCommonInterfaceImplementations(option.Name, option.BaseType)
                 .AppendBufferImplicitOperator(option.Name, option.BaseType, option.IsLittleEndian, true)
                 .AppendBufferImplicitOperator(option.Name, option.BaseType, option.IsLittleEndian, false)
@@ -180,19 +180,20 @@ namespace {Namespace}
                 baseType,
                 name);
 
-        private static StringBuilder AppendConstructor(this StringBuilder builder, string name, string baseType, string modifier = "private") =>
+        private static StringBuilder AppendConstructor(this StringBuilder builder, string name, string baseType, bool isReadonlyStruct, string modifier = "private") =>
             builder.AppendFormat(CultureInfo.InvariantCulture,
                 @"
-        private {1} Value;
+        private {0} {1} Value;
 
-        private {2}({1} value)
+        {3} {2}({1} value)
         {{
             Value = value;
         }}
 ",
-                modifier,
+                isReadonlyStruct ? "readonly": string.Empty,
                 baseType,
-                name);
+                name,
+                modifier);
 
         private static StringBuilder AppendStringOverride(this StringBuilder builder, int hexPadding)
         {

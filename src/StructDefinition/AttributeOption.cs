@@ -23,5 +23,7 @@
         public bool IsLittleEndian { get; set; } = IsLittleEndianPropertyDefaultValue;
 
         public bool OverrideToString { get; set; } = true;
+
+        public bool IsReadonlyStruct { get; set; }
     }
 }

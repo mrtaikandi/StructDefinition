@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace StructDefinition
@@ -20,7 +21,8 @@ namespace StructDefinition
             var attribute = sds.AttributeLists
                 .SelectMany(a => a.Attributes)
                 .SingleOrDefault(a =>
-                    a.Name is IdentifierNameSyntax nameSyntax && string.Equals(nameSyntax.Identifier.ValueText, SourceProvider.AttributeName, StringComparison.Ordinal));
+                    a.Name is IdentifierNameSyntax nameSyntax && string.Equals(nameSyntax.Identifier.ValueText, SourceProvider.AttributeName, StringComparison.Ordinal) ||
+                    a.Name is QualifiedNameSyntax qnSyntax && string.Equals(qnSyntax.Right.Identifier.ValueText, SourceProvider.AttributeName, StringComparison.Ordinal));
 
             if (attribute?.ArgumentList is null)
             {
@@ -39,7 +41,10 @@ namespace StructDefinition
                 return;
             }
 
-            var option = new AttributeOption(sds.Identifier.ValueText, ns);
+            var option = new AttributeOption(sds.Identifier.ValueText, ns)
+            {
+                IsReadonlyStruct = sds.Modifiers.Any(SyntaxKind.ReadOnlyKeyword)
+            };
 
             foreach (var argument in attribute.ArgumentList.Arguments)
             {
