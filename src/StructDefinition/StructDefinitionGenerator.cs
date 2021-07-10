@@ -1,9 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Runtime.Serialization;
+using System.Security.Permissions;
+using Microsoft.CodeAnalysis;
 
 namespace StructDefinition
 {
     [Generator]
-    public class StructDefinitionGenerator : ISourceGenerator
+    public class StructDefinitionGenerator : ISourceGenerator, ISerializable
     {
         public void Execute(GeneratorExecutionContext context)
         {
@@ -26,5 +28,12 @@ namespace StructDefinition
         }
 
         public void Initialize(GeneratorInitializationContext context) => context.RegisterForSyntaxNotifications(() => new StructDefinitionSyntaxReceiver());
+
+        /// <inheritdoc />
+        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

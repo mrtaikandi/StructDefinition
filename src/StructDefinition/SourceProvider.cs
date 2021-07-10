@@ -70,11 +70,13 @@ namespace {Namespace}
             var builder = new StringBuilder()
                 .AppendStruct(option.Name, option.BaseType, option.Namespace)
                 .AppendConstructor(option.Name, option.BaseType, option.IsReadonlyStruct)
+                .AppendSerializerConstructor(option.Name, option.BaseType)
                 .AppendCommonInterfaceImplementations(option.Name, option.BaseType)
                 .AppendBufferImplicitOperator(option.Name, option.BaseType, option.IsLittleEndian, true)
                 .AppendBufferImplicitOperator(option.Name, option.BaseType, option.IsLittleEndian, false)
                 .AppendParseMethods(option.Name, option.BaseType)
-                .AppendToByteArrayMethod(option.BaseType, option.IsLittleEndian);
+                .AppendToByteArrayMethod(option.BaseType, option.IsLittleEndian)
+                .AppendSerializable();
 
             if (option.OverrideToString)
             {
@@ -84,6 +86,16 @@ namespace {Namespace}
             builder.Finalize();
 
             return ($"{option.Name}.g.cs", SourceText.From(builder.ToString(), Encoding.UTF8));
+        }
+
+        private static StringBuilder AppendSerializable(this StringBuilder builder)
+        {
+            return builder.Append(@"
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue(""Value"", Value);
+        }
+".Trim());
         }
 
         private static StringBuilder AppendParseMethods(this StringBuilder builder, string name, string baseType)
@@ -223,7 +235,7 @@ namespace {Namespace}
                 @"
         private {0} {1} Value;
 
-        {3} {2}({1} value)
+        {3} {2}({1} value) : this()
         {{
             Value = value;
         }}
@@ -232,6 +244,17 @@ namespace {Namespace}
                 baseType,
                 name,
                 modifier);
+
+        private static StringBuilder AppendSerializerConstructor(this StringBuilder builder, string name, string baseType) =>
+            builder.AppendFormat(CultureInfo.InvariantCulture,
+                @"        
+        public {0}(SerializationInfo info, StreamingContext text) : this()
+        {{
+            Value = info.Get{1}(""Value"");
+        }}
+",
+                name,
+                ConvertBaseTypeToSystemName(baseType));
 
         private static StringBuilder AppendStringOverride(this StringBuilder builder, int hexPadding)
         {
@@ -253,15 +276,17 @@ namespace {Namespace}
 namespace {0} 
 {{
     using System;
-    using System.Diagnostics;
-    using System.Globalization;
     using System.Buffers.Binary;
-    using System.Runtime.InteropServices;
+    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
+    using System.Runtime.InteropServices;
+    using System.Runtime.Serialization;
+    using System.Security.Permissions;
 
     [StructLayout(LayoutKind.Sequential)]    
     [DebuggerDisplay(""{1}: {{ToString()}}"")]
-    public partial struct {1} : IComparable, IComparable<{2}>, IConvertible, IEquatable<{2}>, IFormattable, {3}.{4}
+    public partial struct {1} : IComparable, IComparable<{2}>, IConvertible, IEquatable<{2}>, IFormattable, ISerializable, {3}.{4}
     {{    
 ",
                 nameSpace,
