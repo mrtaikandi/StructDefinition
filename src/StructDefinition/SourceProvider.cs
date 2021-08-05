@@ -10,7 +10,6 @@ namespace StructDefinition
     {
         internal const string AttributeFullName = "StructDefinitionAttribute";
         internal const string AttributeName = "StructDefinition";
-        internal const string InterfaceName = "IByteArrayConvertible";
         internal const string Namespace = "StructDefinition";
 
         internal static (string hintName, SourceText sourceText) AttributeSource()
@@ -43,28 +42,6 @@ namespace {Namespace}
             return ($"{AttributeFullName}.g.cs", SourceText.From(source, Encoding.UTF8));
         }
 
-        internal static (string hintName, SourceText sourceText) InterfaceSource()
-        {
-            var source = $@"
-#nullable enable
-namespace {Namespace}
-{{
-    using System;
-    
-    public interface {InterfaceName}
-    {{
-        byte[] ToByteArray();
-
-        void Write(Span<byte> buffer);
-
-        int Size {{ get; }}
-    }}
-}}
-";
-
-            return ($"{InterfaceName}.g.cs", SourceText.From(source, Encoding.UTF8));
-        }
-
         internal static (string hintName, SourceText sourceText) Source(AttributeOption option)
         {
             var builder = new StringBuilder()
@@ -75,7 +52,6 @@ namespace {Namespace}
                 .AppendBufferImplicitOperator(option.Name, option.BaseType, option.IsLittleEndian, true)
                 .AppendBufferImplicitOperator(option.Name, option.BaseType, option.IsLittleEndian, false)
                 .AppendParseMethods(option.Name, option.BaseType)
-                .AppendToByteArrayMethod(option.BaseType, option.IsLittleEndian)
                 .AppendSerializable();
 
             if (option.OverrideToString)
@@ -286,47 +262,12 @@ namespace {0}
 
     [StructLayout(LayoutKind.Sequential)]    
     [DebuggerDisplay(""{1}: {{ToString()}}"")]
-    public partial struct {1} : IComparable, IComparable<{2}>, IConvertible, IEquatable<{2}>, IFormattable, ISerializable, {3}.{4}
+    public partial struct {1} : IComparable, IComparable<{2}>, IConvertible, IEquatable<{2}>, IFormattable, ISerializable
     {{    
 ",
                 nameSpace,
                 name,
-                baseType,
-                Namespace,
-                InterfaceName);
-
-        private static StringBuilder AppendToByteArrayMethod(this StringBuilder builder, string baseType, bool isLittleEndian)
-        {
-            builder.AppendLine();
-            if (string.Equals(baseType, "byte", StringComparison.OrdinalIgnoreCase))
-            {
-                builder.AppendLine();
-                builder.AppendLine("public byte[] ToByteArray() => new [] { Value };");
-                builder.AppendLine();
-                builder.Append("public void Write(Span<byte> buffer) => buffer[0] = Value;");
-            }
-            else
-            {
-                builder.Append(
-                    @"
-        public byte[] ToByteArray()
-        {{
-            var bytes = new byte[Size];
-            Write(bytes);
-
-            return bytes;
-        }}");
-
-                builder.AppendFormat(CultureInfo.InvariantCulture,
-                    @"
-
-        public void Write(Span<byte> buffer) => BinaryPrimitives.Write{0}{1}(buffer, Value);",
-                    ConvertBaseTypeToSystemName(baseType),
-                    GetEndianString(isLittleEndian));
-            }
-
-            return builder;
-        }
+                baseType);
 
         private static string ConvertBaseTypeToSystemName(string baseType)
         {

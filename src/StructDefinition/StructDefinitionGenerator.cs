@@ -12,9 +12,6 @@ namespace StructDefinition
             var (hintName, source) = SourceProvider.AttributeSource();
             context.AddSource(hintName, source);
 
-            (hintName, source) = SourceProvider.InterfaceSource();
-            context.AddSource(hintName, source);
-
             if (context.SyntaxReceiver is not StructDefinitionSyntaxReceiver syntaxReceiver)
             {
                 return;
